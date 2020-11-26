@@ -2,7 +2,7 @@
 title: "Regression"
 author: "delpinolisette"
 date: "11/26/2020"
-output: html_document
+output: github_document
 ---
 
 # Regression 1
