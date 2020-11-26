@@ -28,11 +28,45 @@ body {
 <h1 id="regression">Regression</h1>
 <p>delpinolisette 11/26/2020</p>
 <h1 id="regression-1">Regression 1</h1>
-<p>test test</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>test<span class="ot">&lt;-</span><span class="dv">0</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>test</span></code></pre></div>
-<pre><code>## [1] 0</code></pre>
-<p>does math work 37<em>x</em> + ∑</p>
+<p>So far, have only really manipulated data and reshaped/recoded variables. The next step is to use this tidied data to perform regression.</p>
+<p>Linear regression can be thought of predicting one variable using a second variable.</p>
+<p>## Exercise 1 Try to predict election outcome based on facial appearance (compare election outcomes for a candiate based on ‘facial competence’ ratings by surveyed students.) Build a linear regression model.</p>
+<p>### Step 1: Decide which is the binary predictor variable and which is the binary outcome variable.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load in libraries to read csv and then plot using ggplot. </span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggrepel)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>face_rate<span class="ot">&lt;-</span><span class="fu">read_csv</span>(<span class="st">&quot;face.csv&quot;</span>)</span></code></pre></div>
+<pre><code>## Parsed with column specification:
+## cols(
+##   year = col_double(),
+##   state = col_character(),
+##   winner = col_character(),
+##   loser = col_character(),
+##   w.party = col_character(),
+##   l.party = col_character(),
+##   d.comp = col_double(),
+##   r.comp = col_double(),
+##   d.votes = col_double(),
+##   r.votes = col_double()
+## )</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># take a look at face_rate</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(face_rate)</span></code></pre></div>
+<pre><code>## # A tibble: 6 x 10
+##    year state winner    loser     w.party l.party d.comp r.comp d.votes r.votes
+##   &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt;   &lt;chr&gt;    &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+## 1  2000 CA    Feinstein Campbell  D       R        0.565  0.435 5790154 3779325
+## 2  2000 DE    Carper    Roth      D       R        0.342  0.658  181387  142683
+## 3  2000 FL    Nelson    McCollum  D       R        0.612  0.388 2987644 2703608
+## 4  2000 GA    Miller    Mattingly D       R        0.542  0.458 1390428  933698
+## 5  2000 HI    Akaka     Carroll   D       R        0.680  0.320  251130   84657
+## 6  2000 IN    Lugar     Johnson   R       D        0.321  0.679  684242 1419629</code></pre>
+<p>It looks like the data frame contains <code>d.comp</code> and <code>r.comp</code> headers. Those record measures of competency based only on brief viewings of the candidate’s face.</p>
+<p>Also, <code>l.party</code> tracks the party of the candidate.</p>
+<p><code>r.vote</code> and <code>d.vote</code> track the election outcomes (number of votes) for that particular election.</p>
+<p>Thus, the independent binary predictor should correspond to the compentency ratings and the binary outcome should predict to whether the candidate won or lost.</p>
+<h4 id="prepping-the-outcome-variable">Prepping The Outcome Variable:</h4>
+<p>To prep the outcome variable, calculate the difference in the share of votes</p>
 
 </body>
 </html>

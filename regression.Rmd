@@ -6,11 +6,35 @@ output: github_document
 ---
 
 # Regression 1
-test test 
+ So far, have only really manipulated data and reshaped/recoded variables. The next step is to use this tidied data to perform regression. 
 
-```{r}
-test<-0
-test
-```
+ Linear regression can be thought of predicting one variable using a second variable. 
 
-does math work $37x + \sum$
+ ## Exercise 1
+ Try to predict election outcome based on facial appearance (compare election outcomes for a candiate based on 'facial competence' ratings by surveyed students.) Build a linear regression model. 
+
+ ### Step 1:
+ Decide which is the binary predictor variable and which is the binary outcome variable. 
+
+ ```{r}
+ # load in libraries to read csv and then plot using ggplot. 
+ library(tidyverse)
+ library(ggrepel)
+
+ face_rate<-read_csv("face.csv")
+
+ # take a look at face_rate
+ head(face_rate)
+ ```
+
+ It looks like the data frame contains `d.comp` and `r.comp` headers. Those record measures of competency based only on brief viewings of the candidate's face. 
+
+ Also, `l.party` tracks the party of the candidate. 
+
+ `r.vote` and `d.vote` track the election outcomes (number of votes) for that particular election. 
+
+ Thus, the independent binary predictor should correspond to the compentency ratings and the binary outcome should predict to whether the candidate won or lost. 
+
+#### Prepping The Outcome Variable:
+To prep the outcome variable, calculate the difference in the share of votes 
+
