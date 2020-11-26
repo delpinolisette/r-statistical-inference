@@ -12,13 +12,16 @@ regression.
 Linear regression can be thought of predicting one variable using a
 second variable.
 
-\#\# Exercise 1 Try to predict election outcome based on facial
-appearance (compare election outcomes for a candiate based on ‘facial
-competence’ ratings by surveyed students.) Build a linear regression
-model.
+## Exercise 1:
 
-\#\#\# Step 1: Decide which is the binary predictor variable and which
-is the binary outcome variable.
+Try to predict election outcome based on facial appearance (compare
+election outcomes for a candiate based on ‘facial competence’ ratings by
+surveyed students.) Build a linear regression model.
+
+### Step 1
+
+Decide which is the binary predictor variable and which is the binary
+outcome variable.
 
 ``` r
 # load in libraries to read csv and then plot using ggplot. 
@@ -74,3 +77,5 @@ candidate won or lost.
 
 To prep the outcome variable, calculate the difference in the share of
 votes
+
+### Step 2
