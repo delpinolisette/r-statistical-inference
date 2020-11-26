@@ -6,4 +6,11 @@ output: github_document
 ---
 
 # Regression 1
-test test
+test test 
+
+```{r}
+test<-0
+test
+```
+
+does math work $37x + \sum$
