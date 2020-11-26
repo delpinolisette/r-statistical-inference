@@ -38,6 +38,23 @@ output: github_document
  Thus, the independent binary predictor should correspond to the compentency ratings and the binary outcome should predict to whether the candidate won or lost. 
 
 #### Prepping The Outcome Variable:
-To prep the outcome variable, calculate the difference in the share of votes 
+To prep the outcome variable, calculate the difference in the share of votes between Democratic and Republican candidates. 
 
-## Step 2
+why? `r.share` tracks the *proportion* of the vote that the republican candidate won, while `d.share` tracks the *proportion* of the vote that the democratic candidate won.
+
+```{r}
+face_rate$r.share<-face_rate$r.votes / (face_rate$r.votes + face_rate$d.votes)
+#head(face_rate)
+
+face_rate$d.share<-face_rate$d.votes/(face_rate$r.votes + face_rate$d.votes)
+#head(face_rate$d.share)
+
+# margins
+face_rate$diff_in_vote_share <-(face_rate$d.share - face_rate$r.share)
+head(face_rate$diff_in_vote_share)
+```
+
+So now the `diff_in_vote_share` column tracks the differences in vote share. If positive, the democratic candidate got that much more proportional share of the vote. 
+
+## Step 2: Plot the Data Using ggplot for initial guesses
+

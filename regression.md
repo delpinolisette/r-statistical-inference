@@ -76,6 +76,28 @@ candidate won or lost.
 #### Prepping The Outcome Variable:
 
 To prep the outcome variable, calculate the difference in the share of
-votes
+votes between Democratic and Republican candidates.
 
-### Step 2
+why? `r.share` tracks the *proportion* of the vote that the republican
+candidate won, while `d.share` tracks the *proportion* of the vote that
+the democratic candidate won.
+
+``` r
+face_rate$r.share<-face_rate$r.votes / (face_rate$r.votes + face_rate$d.votes)
+#head(face_rate)
+
+face_rate$d.share<-face_rate$d.votes/(face_rate$r.votes + face_rate$d.votes)
+#head(face_rate$d.share)
+
+# margins
+face_rate$diff_in_vote_share <-(face_rate$d.share - face_rate$r.share)
+head(face_rate$diff_in_vote_share)
+```
+
+    ## [1]  0.21012941  0.11943099  0.04990747  0.19651688  0.49576964 -0.34953997
+
+So now the `diff_in_vote_share` column tracks the differences in vote
+share. If positive, the democratic candidate got that much more
+proportional share of the vote.
+
+## Step 2: Plot the Data Using ggplot for initial guesses

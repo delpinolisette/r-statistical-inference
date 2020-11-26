@@ -68,8 +68,20 @@ body {
 <p><code>r.vote</code> and <code>d.vote</code> track the election outcomes (number of votes) for that particular election.</p>
 <p>Thus, the independent binary predictor should correspond to the compentency ratings and the binary outcome should predict to whether the candidate won or lost.</p>
 <h4 id="prepping-the-outcome-variable">Prepping The Outcome Variable:</h4>
-<p>To prep the outcome variable, calculate the difference in the share of votes</p>
-<h2 id="step-2">Step 2</h2>
+<p>To prep the outcome variable, calculate the difference in the share of votes between Democratic and Republican candidates.</p>
+<p>why? <code>r.share</code> tracks the <em>proportion</em> of the vote that the republican candidate won, while <code>d.share</code> tracks the <em>proportion</em> of the vote that the democratic candidate won.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>face_rate<span class="sc">$</span>r.share<span class="ot">&lt;-</span>face_rate<span class="sc">$</span>r.votes <span class="sc">/</span> (face_rate<span class="sc">$</span>r.votes <span class="sc">+</span> face_rate<span class="sc">$</span>d.votes)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">#head(face_rate)</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>face_rate<span class="sc">$</span>d.share<span class="ot">&lt;-</span>face_rate<span class="sc">$</span>d.votes<span class="sc">/</span>(face_rate<span class="sc">$</span>r.votes <span class="sc">+</span> face_rate<span class="sc">$</span>d.votes)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#head(face_rate$d.share)</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># margins</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>face_rate<span class="sc">$</span>diff_in_vote_share <span class="ot">&lt;-</span>(face_rate<span class="sc">$</span>d.share <span class="sc">-</span> face_rate<span class="sc">$</span>r.share)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(face_rate<span class="sc">$</span>diff_in_vote_share)</span></code></pre></div>
+<pre><code>## [1]  0.21012941  0.11943099  0.04990747  0.19651688  0.49576964 -0.34953997</code></pre>
+<p>So now the <code>diff_in_vote_share</code> column tracks the differences in vote share. If positive, the democratic candidate got that much more proportional share of the vote.</p>
+<h2 id="step-2-plot-the-data-using-ggplot-for-initial-guesses">Step 2: Plot the Data Using ggplot for initial guesses</h2>
 
 </body>
 </html>
