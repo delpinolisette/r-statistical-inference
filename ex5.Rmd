@@ -1,0 +1,122 @@
+---
+title: "Assignment 5 - COMM 290"
+author: "delpinolisette"
+date: "11/26/2020"
+output: word_document
+---
+
+Goal: Evaluate whether Brett Kavanaugh's confirmation to the Supreme Court of US, in light of the allegations of sexual assault, eroded the public confidence in the Supreme Court. We are particularly interested in investigating the possible erosion of trust among Democratic voters and women. 
+
+The survey recorded people's trust in the Supreme Court directly before and directly after the confimation of B. Kavanaugh. 
+
+# Exercise 1
+
+First load in the `bk.dta` data. 
+
+```{r}
+library(tidyverse)
+library(haven) # to read dta
+library(labelled) # to manipulate metadata
+library(psych) # for use of Croenbach's Alpha for inter-item reliability
+
+#bk = Brett K.
+bk<-read_dta("bk.dta")
+```
+Each column tracks a rated response to a question regarding trust in the Supreme Court, or the gender / political learning of the survey responder. 
+
+### Step 1: Create the Outcome Variable
+
+Create the outcome variable - "trust in the Supreme Court" - using the follow up survey questions coded in `a21,a22,a23`. 
+
+```{r}
+head(bk$a21) # 3 to 9 where 3 = strongly agree the SC can be trsuted to make right dec, 9 is strongly disagree
+mean(bk$a21,na.rm=T) # pretty high trust in SC
+head(bk$a22) # 3 to 9 where 3= strongly agree that most americans would disagree if the SC started making a lot of rulings most americans would disagree (npt a lot of trust) - need to code backwards!! gonna code it normally for now because the instructions and mi intuition says that the important part is cut off. TODO chekc with insructor or fiend
+mean(bk$a22,na.rm=T)
+head(bk$a23)  # 3 to 9 where 3 = strongly agree that I trust the SC to operate in the best interests of americans
+str(bk$a22)
+mean(bk$a23,na.rm=T)
+
+# to make the outcome variable
+
+
+```
+
+question - how to make an index?
+1, check interitem reliability using chroenbacks alpha
+step 1 is rescale it? nake sure to reverse code if its in the opposite direction
+- see class 10 
+step 2 - measuring inter item realiability -see class 13 and hw 3 perhaps
+use row means to calculate it
+
+rescaling section:
+
+First I recoded the three post-decision survey questions to fit within 0 and 1,
+where 0 means that they strongly disagree and 1 means that they strongly agree
+(so 0 would imply less trust in the Supreme Court while 1 would imply the most
+trust in the Supreme court, post- Brett K.'s appointment)
+
+```{r}
+# need to recode to be between 0 and 1
+bk$post_trust_1 <- case_when(bk$a21 >= 1 & bk$a21 <= 7 ~ (7-bk$a21)/6)
+#head(bk$a21)
+#head(bk$post_trust_1)
+
+bk$post_trust_2 <- case_when(bk$a22 >= 1 & bk$a22 <= 7 ~ (7-bk$a22)/6)
+# from the code book this one might be negatively correlated with trust in 
+# the supreme court so I will reverse it. 
+bk$post_trust_2 <- 1 - bk$post_trust_2
+#head(bk$a22, 10)
+#head(bk$post_trust_2,10)
+
+bk$post_trust_3 <- case_when(bk$a23 >= 1 & bk$a23 <= 7 ~ (7-bk$a23)/6)
+#head(bk$a23, 15)
+#head(bk$post_trust_3, 15)
+
+
+# then need to do a Croenbach's Alpha inter-reliability analysis
+alpha(select(bk,post_trust_1,post_trust_2,post_trust_3))
+
+```
+Since Cronbach's raw alpha value is 0.67, these three variables are okay indicators 
+of the same thing - trust in the supreme court - but they are not great indicators of this. 
+
+To make the index, let's take row means. 
+```{r}
+bk$post_trust_final <- rowMeans(select(bk,post_trust_1,post_trust_2,post_trust_3))
+```
+This column indexes overall trust in the S.C after the Brett K's nomination. 
+
+# Question 2
+
+The model has binary independent/predictor variable `cond`, with `cond = 0`
+meaning the person was interviewed before confirmatiom, and `cond = 1` meaning the
+person was interviewed after the confirmation (before and after treatment)
+
+```{r}
+m1<-lm(post_trust_final~cond,bk)
+m1
+
+# negative correlation between time surveyed and trust
+
+summary(m1)
+
+confint(m1)
+```
+Intercept:`r coeff(m1)[1]` 
+Slope:`r coeff(m1)[2]`
+Standard Error of intercentpt: 
+p-val of intercentpt: 
+t-val of intercentpt: 
+95% CI of intercept:
+
+Standard Error of slope: 
+p-val of slope: 
+t-val of slope: 
+95% CI of slope:
+
+
+# Question 3
+
+
+
