@@ -59,20 +59,15 @@ trust in the Supreme court, post- Brett K.'s appointment)
 ```{r}
 # need to recode to be between 0 and 1
 bk$post_trust_1 <- case_when(bk$a21 >= 1 & bk$a21 <= 7 ~ (7-bk$a21)/6)
-#head(bk$a21)
-#head(bk$post_trust_1)
+
 
 bk$post_trust_2 <- case_when(bk$a22 >= 1 & bk$a22 <= 7 ~ (7-bk$a22)/6)
 # from the code book this one might be negatively correlated with trust in 
 # the supreme court so I will reverse it. 
 bk$post_trust_2 <- 1 - bk$post_trust_2
-#head(bk$a22, 10)
-#head(bk$post_trust_2,10)
+
 
 bk$post_trust_3 <- case_when(bk$a23 >= 1 & bk$a23 <= 7 ~ (7-bk$a23)/6)
-#head(bk$a23, 15)
-#head(bk$post_trust_3, 15)
-
 
 # then need to do a Croenbach's Alpha inter-reliability analysis
 alpha(select(bk,post_trust_1,post_trust_2,post_trust_3))
@@ -94,8 +89,10 @@ meaning the person was interviewed before confirmatiom, and `cond = 1` meaning t
 person was interviewed after the confirmation (before and after treatment)
 
 ```{r}
-m1<-lm(post_trust_final~cond,bk)
+m1<-lm(post_trust_final~factor(cond),bk)
 m1
+
+# think i need to make it a factor variable, not continuous. 
 
 # negative correlation between time surveyed and trust
 
@@ -118,5 +115,79 @@ t-val of slope:
 
 # Question 3
 
+First I want to recode the variable to be between 0 and 1, where 0 represents
+the least trust in the supreme court (corresponds to 7 - on the strongly agree
+questions which imply distrust in the SC) and 1 represents the other end of the
+scale - (the strongly disagree response on questions which imply distrust in the SC
+- so imply trust in SC)
+
+```{r}
+# need to recode to be between 0 and 1
+bk$base_trust_1 <- case_when(bk$sc1 >= 1 & bk$sc1 <= 7 ~ (7-bk$sc1)/6)
 
 
+bk$base_trust_2 <- case_when(bk$sc2 >= 1 & bk$sc2 <= 7 ~ (7-bk$sc2)/6)
+# from the code book this one might be negatively correlated with trust in 
+# the supreme court so I will reverse it. 
+bk$base_trust_2 <- 1 - bk$base_trust_2
+
+
+bk$base_trust_3 <- case_when(bk$sc3 >= 1 & bk$sc3 <= 7 ~ (7-bk$sc3)/6)
+
+
+alpha(select(bk,base_trust_1,base_trust_2,base_trust_3))
+# the alphas might be so low because question 2 might not be a great indicator
+# of distrust in the SC
+bk$base_trust_final <- rowMeans(select(bk,base_trust_1,base_trust_2,base_trust_3))
+
+```
+Now we use lagged dependent variable to control for the baseline trust variable.
+
+```{r}
+# recall model 1, a simple linear regression
+m1
+# now [lagged DV]
+m2<-lm(post_trust_final~factor(cond)+base_trust_final,bk)
+m2
+summary(m2)
+
+# QUESTION FOR DR.KIM: why does this work????
+# and how can i interpret this???
+```
+# Question 4
+
+Investigate whether the effect was stronger among Democrats. Also investigate
+whether the effect was stronger among women. Report the point estimates of the intercept and
+slope coefficients, their standard errors, t-value, p-value, and 95% confidence intervals. Describe
+the key findings in 3-4 sentences. (2 points)
+
+Part 1:
+To see if the effect was stronger among Democrats, need to subset into only Dems
+and run the regression models again. 
+
+```{r}
+# dem model
+
+m_dem<-lm(post_trust_final~factor(cond),subset(bk,pid >=4 | pid <=6))
+m_dem
+summary(m_dem)
+
+# is women model
+m_women<-lm(post_trust_final~factor(cond), subset(bk, female==1))
+summary(m_women)
+m_women
+```
+
+# Question 5:
+- 
+
+# questions:
+1. check num 1
+2. check num 2
+3. check num 3
+4. check num 4
+5. do num 5
+
+```{r}
+
+```

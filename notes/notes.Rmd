@@ -6755,3 +6755,206 @@ mmr$unfav[mmr$prior=="favorable"|mmr$prior=="neutral"]<-0
 - Q4. Estimate the marginal means and their uncertainty stats
 
 
+# Class 25 - Dec 01 2020 - 12-01-2020
+
+## Housekeeping
+
+- Final paper guideline is up
+- Online privacy experiment will launch tomorrow
+  - Data will be posted before Thursday's class
+  - Survey instrument on Canvas (`privacy.docx`)
+
+## Today's Agenda
+
+- Online privacy experiment overview
+- Final paper Q&A
+- Creating regression tables
+
+## Libraries and Datasets
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(haven)
+library(labelled)
+library(stargazer) # creates regression tables, new
+aca<-read_dta("aca.dta")
+social<-read_csv("social.csv")
+```
+
+# Climate Change Experiment
+
+## Let's take it!
+
+- https://upenn.co1.qualtrics.com/jfe/form/SV_6tx8KSPbTMCPw5T
+- Survey is identical except the future research part
+
+## Study overview 
+
+- Participants
+  - Workers at Amazon's Mechanical Turk
+  - 1,500 participants
+
+- Survey experiment with 2 X 2 X 2 (8) conditions (Independent variable)
+  - Whether asked to to provide social media accounts in the new study
+  - Whether asked about personal life in the new study
+  - Wage (\$0.5 vs \$25)
+
+- Outcome: only two of them 
+  - Willingness to participate in the "future" study (yes or no)
+  - Desired wage ($)
+
+## Procedure
+
+1. Consent
+2. Demographics (gender, age, race, income, education)
+3. Privacy concerns
+4. Social media
+5. Political questions
+6. Treatment + outcome
+
+
+## Potential research questions and key comparisons
+
+- Effect of one of the three treatments:
+  - Not asking for social media accounts (baseline) vs Asking for social media accounts
+  - Not asking about personal life  (baseline) vs Asking about personal life
+  - Offered 0.5  (baseline) vs Offered 25  
+
+- Interaction among the treatments (heterogeneous effect):
+  - e.g., Effect of asking for social media accounts: larger when offered 0.5 than when offered 25
+    - People will be less willing to take part in a study that asks for social media info **but that depends on** how much money is offered
+    - moderating variable: monetary incentive
+
+- Interaction between a treatment and a non-random covariate (heterogeneous effect)
+  - e.g., Effect of asking for social media accounts: larger among highly educated people
+    - People will be less willing to take part in a study that asks for social media info **but that depends on** education level
+    - moderating variable: education
+
+
+# Final Paper Q&A
+
+# Regression Tables
+
+## After you run models, you report the findings in a table
+
+- Typically, people report several models in one table
+- Related models that differ in terms of...
+  - Outcome variables
+  - With or without controls
+  - With or without interaction terms
+- Manually transcribing your R outputs to a standard regression table format will be extremely tedious
+- the `stargazer` library makes this much easier
+- Syntax: `stargazer(model)`
+  - options
+    - `type`: "text", "html", or "latex" $\rightsquigarrow$ output type
+    - `covariate.labels = c ("iv1", "iv2", "iv3)` $\rightsquigarrow$ names of IVs
+    - `dep.var.labels = c("dv1", "dv2)` $\rightsquigarrow$ names of DVs
+    - `keep.stat=("n")` $\rightsquigarrow$ drop every summary stat except "n"
+    - `style=("ajps)` $\rightsquigarrow$ format the table to the style of the American Journal of Political Science
+    
+## Example (ACA)
+
+```{r}
+# for simplicity, we're going to drop three treatment conditions
+aca<-subset(aca,cond==0|cond==1)
+# 8 models
+m1<-lm(aca~cond,aca) # DV = aca
+m2<-lm(aca~cond+w1aca+w1cost,aca) # controlling for baseline covariates
+m3<-lm(aca~cond*dem,aca) # interaction term between condition and Dem dummy
+m4<-lm(aca~cond*dem+w1aca+w1cost,aca) # controls + interaction term
+m5<-lm(cost~cond,aca)
+m6<-lm(cost~cond+w1aca+w1cost,aca)
+m7<-lm(cost~cond*dem,aca)
+m8<-lm(cost~cond*dem+w1aca+w1cost,aca)
+```
+
+## Reporting the 8 models with stargazer
+- default will produce latex code 
+```{r}
+stargazer(m1,m2,m3,m4,m5,m6,m7,m8)
+```
+
+## Reporting the 8 models with stargazer
+- style = "text" argument will produce the table in plain text
+```{r}
+stargazer(m1,m2,m3,m4,m5,m6,m7,m8, type = "text")
+```
+
+## Reporting the 8 models with stargazer
+- style = "html" argument will produce the table in html code
+```{r}
+stargazer(m1,m2,m3,m4,m5,m6,m7,m8, type = "html")
+```
+
+
+## Reporting the 8 models with stargazer
+- `out = "table.html"` argument will produce a html file named "table.html" in your WD
+- You can copy and paste the table in word doc (for final paper)
+```{r}
+stargazer(m1,m2,m3,m4,m5,m6,m7,m8, out = "table.html")
+```
+- But let's use the "text" style for now...
+
+## Changing the significance level cutoffs
+- Little stars indicate whether a coefficient is statistically significant
+- Default cutoffs are .1, .05, .01
+- More widely accepted cutoffs are .05,
+  - p < .1 is sometimes called "marginally significant" 
+- Use the `star.cutoffs` argument
+```{r}
+stargazer(m1,m2,m3,m4,m5,m6,m7,m8,type = "text",
+          star.cutoffs = c(.05, .01, .001))
+```
+
+## Changing the names of variables
+- `covariate.labels` option for IVS
+- `dep.var.labels` option for IVS
+
+```{r}
+stargazer(m1,m2,m3,m4,m5,m6,m7,m8,type = "text",
+          star.cutoffs = c(.05, .01, .001),
+          covariate.labels = c("Con Info", "Baseline Attitude", "Baseline Belief", "Democrat", "Con Info X Democrat"),
+          dep.var.labels = c("Attitude toward the ACA", "Belief that ACA saves costs"))
+```
+
+## Dropping Summary stats
+- R2, Adjusted R2, Residual Std. Error, F Statistic
+  - Measures of how well the model fit the data 
+    - e.g., R-square: the amount of the variance of the DV, explained by the IVs
+  - Not as important as the coefficients (why we skipped them)
+  - People often omit them
+- `keep.stat="n"` will drop everything but `n`, # of observations (which you should report)
+```{r}
+stargazer(m1,m2,m3,m4,m5,m6,m7,m8,type = "text",
+          star.cutoffs = c(.05, .01, .001),
+          covariate.labels = c("Con Info", "Baseline Attitude", "Baseline Belief", "Democrat", "Con Info X Democrat"),
+          dep.var.labels = c("Attitude toward the ACA", "Belief that ACA saves costs"),
+          keep.stat="n")
+```
+
+## Style of a particular journal
+- You can match the format of your table to the formatting of top journals in social sciences
+- I am using the formatting of the American Journal of Political Science
+```{r}
+# Use this as your template in your final paper unless you have a good reason!
+stargazer(m1,m2,m3,m4,m5,m6,m7,m8,type = "text",
+          star.cutoffs = c(.05, .01, .001),
+          covariate.labels = c("Con Info", "Baseline Attitude", "Baseline Belief", "Democrat", "Con Info X Democrat"),
+          dep.var.labels = c("Attitude toward the ACA", "Belief that ACA saves costs"),
+          keep.stat="n",
+          style = "ajps")
+```
+
+## In-class exercise
+- Run the following models using the social pressure experiment data
+  - m1: regress 2006 turnout on messages
+  - m2: add age (2006-yearofbirth) as a control to m1
+  - m3: add the interaction between messages and 2004 turnout to m1
+  - m4: add age (2006-yearofbirth) as a control to m3
+
+## In-class exercise
+- Create a table that reports the results of m1 to m4, using stargazer
+
+
+
+
