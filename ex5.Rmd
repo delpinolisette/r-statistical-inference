@@ -7,9 +7,9 @@ output: word_document
 
 Goal: Evaluate whether Brett Kavanaugh's confirmation to the Supreme Court of US, in light of the allegations of sexual assault, eroded the public confidence in the Supreme Court. We are particularly interested in investigating the possible erosion of trust among Democratic voters and women. 
 
-The survey recorded people's trust in the Supreme Court directly before and directly after the confimation of B. Kavanaugh. 
+The survey recorded people's trust in the Supreme Court directly before and directly after the confirmation of B. Kavanaugh. 
 
-# Exercise 1
+# Question 1
 
 First load in the `bk.dta` data. 
 
@@ -18,6 +18,7 @@ library(tidyverse)
 library(haven) # to read dta
 library(labelled) # to manipulate metadata
 library(psych) # for use of Croenbach's Alpha for inter-item reliability
+library(stargazer) # for regression tables
 
 #bk = Brett K.
 bk<-read_dta("bk.dta")
@@ -28,33 +29,10 @@ Each column tracks a rated response to a question regarding trust in the Supreme
 
 Create the outcome variable - "trust in the Supreme Court" - using the follow up survey questions coded in `a21,a22,a23`. 
 
-```{r}
-head(bk$a21) # 3 to 9 where 3 = strongly agree the SC can be trsuted to make right dec, 9 is strongly disagree
-mean(bk$a21,na.rm=T) # pretty high trust in SC
-head(bk$a22) # 3 to 9 where 3= strongly agree that most americans would disagree if the SC started making a lot of rulings most americans would disagree (npt a lot of trust) - need to code backwards!! gonna code it normally for now because the instructions and mi intuition says that the important part is cut off. TODO chekc with insructor or fiend
-mean(bk$a22,na.rm=T)
-head(bk$a23)  # 3 to 9 where 3 = strongly agree that I trust the SC to operate in the best interests of americans
-str(bk$a22)
-mean(bk$a23,na.rm=T)
-
-# to make the outcome variable
-
-
-```
-
-question - how to make an index?
-1, check interitem reliability using chroenbacks alpha
-step 1 is rescale it? nake sure to reverse code if its in the opposite direction
-- see class 10 
-step 2 - measuring inter item realiability -see class 13 and hw 3 perhaps
-use row means to calculate it
-
-rescaling section:
 
 First I recoded the three post-decision survey questions to fit within 0 and 1,
 where 0 means that they strongly disagree and 1 means that they strongly agree
-(so 0 would imply less trust in the Supreme Court while 1 would imply the most
-trust in the Supreme court, post- Brett K.'s appointment)
+(so 0 would imply a lower confidence in the Supreme Court while 1 would imply the highest confidence in the Supreme court, post- Brett K.'s appointment)
 
 ```{r}
 # need to recode to be between 0 and 1
@@ -73,19 +51,26 @@ bk$post_trust_3 <- case_when(bk$a23 >= 1 & bk$a23 <= 7 ~ (7-bk$a23)/6)
 alpha(select(bk,post_trust_1,post_trust_2,post_trust_3))
 
 ```
-Since Cronbach's raw alpha value is 0.67, these three variables are okay indicators 
-of the same thing - trust in the supreme court - but they are not great indicators of this. 
+Since Cronbach's raw alpha value is $0.67$, these three variables are okay indicators 
+of the same thing - public confidence (at least in the sample) of the Supreme Court - but they are not great indicators of confidence. 
 
-To make the index, let's take row means. 
+I suspect that $alpha$ value for these three items is not at least $0.8$ because question 2 ($a22,sc2$) in the survey isn't as strong an indicator of a low level of confidence in the Supreme Court as it is perhaps a willingness to change the fundamental structure of the system of government in the US. 
+
+To make the index, let's take the row means. 
 ```{r}
 bk$post_trust_final <- rowMeans(select(bk,post_trust_1,post_trust_2,post_trust_3))
 ```
-This column indexes overall trust in the S.C after the Brett K's nomination. 
+This column `post_trust_final` indexes the overall positive public opinion in the Supreme Court (for this sample) after the Brett Kavanaugh's confirmation, rated on a scale of 0 to 1. 
 
-# Question 2
+# Question 2:
+Test the hypothesis that Kavanaugh’s confirmation undercut trust in the Court, by
+comparing those responded just before the confirmation (cond=0) and just after it (cond=1) using
+a regression model. Report the point estimates of the intercept and slope coefficients, their
+standard errors, t-value, p-value, and 95% confidence intervals. Describe the key findings in 2-3
+sentences. (2 points)
 
 The model has binary independent/predictor variable `cond`, with `cond = 0`
-meaning the person was interviewed before confirmatiom, and `cond = 1` meaning the
+meaning the person was interviewed before confirmation, and `cond = 1` meaning the
 person was interviewed after the confirmation (before and after treatment)
 
 ```{r}
@@ -95,31 +80,55 @@ m1
 # think i need to make it a factor variable, not continuous. 
 
 # negative correlation between time surveyed and trust
-
 summary(m1)
 
 confint(m1)
 ```
-Intercept:`r coeff(m1)[1]` 
-Slope:`r coeff(m1)[2]`
-Standard Error of intercentpt: 
-p-val of intercentpt: 
-t-val of intercentpt: 
-95% CI of intercept:
+#### Least Squares Estimates for the Fitted Line:
+Notice we have a negative slope, corresponding to a decrease in trust for those surveyed after the confirmation of Brett Kavanaugh. 
 
-Standard Error of slope: 
-p-val of slope: 
-t-val of slope: 
-95% CI of slope:
+- Intercept:`r coef(m1)[1]` 
+- Slope:`r coef(m1)[2]`
 
+#### Standard Error of the Estimates and t value/p value:
+Used to calculate the p-value/ Confidence Interval:
+
+- Standard Error of intercept: `0.004611 `
+- Standard Error of slope: `0.006464`
+- t-val of intercept: `133.413`
+- t-val of slope: `-3.875`
+#### p values of intercept and slope for the model:
+
+Less than a statistically significant threshold tells us we can reject $H_0$. 
+
+- p-val of intercept: `< 2e-16`
+- p-val of slope: `0.000108`
+
+#### Confidence Interval (95%)
+
+Gives us a range of values that the true parameter will be in 95% of the time (not the case that there is a 95% chance that the true parameter is within this range):
+
+- 95% CI of intercept: `(Intercept)    0.60615753  0.62423892`
+- 95% CI of slope: `factor(cond)1 -0.03772036 -0.01237409`
+
+
+### Results for Question 2:
+
+From these results, particularly the p-value of the slope ($0.000108$), we get that we must reject the null hypothesis $H_0$ that the confirmation of Brett Kavanaugh did not erode the public confidence in the Supreme Court. Since the p value is less than $0.01$, we can be confident in rejecting the null hypothesis $H_0$. 
+
+We also note that the true parameter for the intercept and slope will be in the range of values listed for the 95% confidence interval exactly 95% of the time, so the slope will be in between -0.03772036 and -0.01237409 95% of the time. I am not claiming that there is 95% chance that the trust slope is in between these two numbers. 
 
 # Question 3
+Create another variable measuring people’s baseline trust in the Supreme Court
+measured at the baseline (sc1, sc2, sc3). Then control for this variable (i.e., lagged DV) in each
+of the models. Briefly comment on how the point estimates and standard errors change as a
+result. (2 points)
 
 First I want to recode the variable to be between 0 and 1, where 0 represents
-the least trust in the supreme court (corresponds to 7 - on the strongly agree
-questions which imply distrust in the SC) and 1 represents the other end of the
-scale - (the strongly disagree response on questions which imply distrust in the SC
-- so imply trust in SC)
+the least trust in the supreme court (corresponds to 7, the "strongly agree" response to the questions measuring distrust in the Supreme Court. 1 represents the other end of the
+scale, namely the "strongly disagree" response to the questions measuring distrust in the Supreme Court. 
+
+For the final index, the scores closer to 0 represent a lower confidence in the Supreme Court while the scores closer to 1 represent a higher confidence in the Supreme Court. 
 
 ```{r}
 # need to recode to be between 0 and 1
@@ -146,14 +155,20 @@ Now we use lagged dependent variable to control for the baseline trust variable.
 ```{r}
 # recall model 1, a simple linear regression
 m1
-# now [lagged DV]
+# now [lagged DV] method gives us:
 m2<-lm(post_trust_final~factor(cond)+base_trust_final,bk)
 m2
 summary(m2)
 
-# QUESTION FOR DR.KIM: why does this work????
-# and how can i interpret this???
+stargazer(m1,m2, type = 'text', style = 'ajps')
+
 ```
+We can interpret these coefficients in this way. $0.09894$ represents the predicted 
+mean when all predicting variables are equal to zero (so this is the predicted mean for those people that were interviewed before the confirmation and also for the people who scored a 0, meaning low opinion, in the baseline opinion measure). The `base_trust_ final` coefficient, $0.84630$, shows that those who had a higher opinion of the Supreme Court in the baseline retained that higher opinion in the follow-up. 
+
+The interesting coefficient change here happens with `cond`, representing the mean difference in trust between those in the control group and treatment group. The standard errors for `cond` in the new model, `0.003793` for the slope, is less than the standard error for the slope for `cond` in model 1 (`0.006464`), it's almost halved. This means that the coefficients in the second model for `cond` will be closer to the population's true mean. 
+Indeed, we see the new mean difference between the control and treatment group, ` -0.017170`, is still negative but shallower once we control for the baseline trust index. So controlling for baseline trust yields a shallower slope on the line of best fit on the model, meaning the effect of the treatment is not as strong. (-0.025047 for model 1 slope vs -0.017170 for model 2). 
+
 # Question 4
 
 Investigate whether the effect was stronger among Democrats. Also investigate
@@ -162,32 +177,205 @@ slope coefficients, their standard errors, t-value, p-value, and 95% confidence 
 the key findings in 3-4 sentences. (2 points)
 
 Part 1:
-To see if the effect was stronger among Democrats, need to subset into only Dems
-and run the regression models again. 
+To see if the effect was stronger among Democrats, need to observe the interactions in the model. First I made political orientation a binary condition (1 if the respondent identified as a Democrat, 0 if they identified as not a Democrat). The female binary variable was already coded for us. 
 
 ```{r}
-# dem model
-
-m_dem<-lm(post_trust_final~factor(cond),subset(bk,pid >=4 | pid <=6))
-m_dem
+# is dem is 0 if not democrat, 1 if democrat. 
+bk$is_dem<-case_when(((bk$pid >=4) & (bk$pid <=6)) ~ 1,
+                     ((bk$pid < 4) | (bk$pid > 6)) ~ 0)
+m_dem_test<-lm(post_trust_final~factor(cond),subset(bk,is_dem==1))
+coef(m_dem_test)
+              
+m_not_dem_test<-lm(post_trust_final~factor(cond),subset(bk,is_dem==0))
+coef(m_not_dem_test)
+                   
+m_dem<-lm(post_trust_final~factor(cond)*is_dem,bk)
 summary(m_dem)
-
-# is women model
-m_women<-lm(post_trust_final~factor(cond), subset(bk, female==1))
-summary(m_women)
-m_women
+confint(m_dem)
 ```
+## Treatment effects (Tracking If Democrat):
+
+#### Coefficients:
+
+- Intercept of Model: $ 0.651957$
+- Slope of Model: $-0.038733$
+
+Notice that this is statistically significant, so must reject null hypothesis that being a Democrat is not a moderating effect on the effect that Kavanaugh's confirmation had on the public opinion of the Supreme Court. 
+
+#### Standard error of Estimates and t values:
+
+- standard error of intercept: $0.006901$
+
+- standard error of slope: $0.012766$
+
+- t value of intercept: $94.475$
+
+- t value of slope: -3.034
+
+
+#### p values:
+
+-p value of intercept: < 2e-16
+
+-p value of slope: 0.00243
+
+
+#### 95% CI:
+
+- CI of intercept: 0.63842719 to 0.66548633
+
+- CI of slope: -0.06376098 to -0.01370498
+
+#### Results for Democrat Interaction model:
+
+We can see that identifying as a Democrat is a moderating factor in the the effect Kavanaugh's confirmation had on trust in the Supreme Court. We know this because the p-value for the slope tracking the interactions is statistically significant(less than $0.01$ actually). From the confidence interval, we can see that the true population parameter is within -0.06376098 and -0.01370498 95% of the time. 
+
+```{r}
+# is women model
+m_women<-lm(post_trust_final~factor(cond)*female,bk)
+summary(m_women)
+confint(m_women)
+```
+## Treatment effects (Tracking If Woman):
+
+#### Coefficients:
+
+- Intercept of Model: $0.627483$
+- Slope of Model: $0.002416$
+
+Notice that this is not statistically significant, so we can not reject null hypothesis.
+
+#### Standard error of Estimates and t values:
+
+- standard error of intercept: $0.006673$
+- standard error of slope: $0.012966$
+
+#### p values:
+
+- p values of intercept: $< 2e-16$
+- p values of slope: $0.85218$
+
+#### 95% CI:
+
+- CI of intercept: $0.61439957 - 0.640567322$
+- CI of slope: $-0.02300521 - 0.027837912$
+
+#### Results (Heterogenous Effects - Women):
+
+From this, we cannot reject the null hypothesis $H_0$ that being a woman did not have an effect on the effect of Kavanaugh's confirmation in public trust of the Supreme Court. 
+
+## Overall Results:
+
+Overall, being a Democrat led the treatment to have a much stronger effect on the treatment eroding the respondent confidence in the Supreme Court. 
 
 # Question 5:
-- 
+Question 5: Use the Penn student survey data to answer your group’s research question. The data file `penn.dta` will be uploaded on 11/21. First, propose two specific, testable hypotheses bearing
+on your general research question. Each hypothesis should state your prediction about the relationship between two variables. For example, if your research question was “which factors are related to Y”, you should name two specific factors (e.g., gender, ethnicity, etc.). Run
+regression models to test your hypotheses. Report the point estimates of the intercept and slope
+coefficients, their standard errors, t-value, p-value, and 95% confidence intervals. Describe what
+these numbers mean in a few sentences. Finally, offer a succinct answer to your research
+question (2 points)
 
-# questions:
-1. check num 1
-2. check num 2
-3. check num 3
-4. check num 4
-5. do num 5
+- note: I ended up using the `penn.sav` file uploaded recently, not the `penn.dta` file uploaded in April 2020. 
+
+Our team wanted to investigate whether social media engagement rose after the start of the pandemic in the US (March 2020)
+
+Hypothesis 1: Those who went on more social media sites pre-pandemic were likely to go on more social media sites after the start of the pandemic. 
+Hypothesis 2: If the respondent selected more social media sites as sites they usually visit, they believed they spent too much time on social media. 
+
 
 ```{r}
+penn<-read_sav("penn.sav")
+setwd("/Users/Lizard Empress/Documents/Code/r-statistical-inference")
+
+head(penn)
+
+# overall number of sites visited pre-march 2020 and post-march 2020
+penn$num_sites_visited_pre<-rowSums(select(penn, q10_1:q10_8),na.rm=T)
+penn$num_sites_visited_post<-rowSums(select(penn, q12_1:q12_7),na.rm=T)
+
+summary(penn$num_sites_visited_pre)
+summary(penn$num_sites_visited_post)
+# sums only go from 1 to 6 in both variables, so recode:
+
+penn$pre_predictor <- case_when(penn$num_sites_visited_pre >= 0 ~ (penn$num_sites_visited_pre/6))
+penn$post_outcome <- case_when(penn$num_sites_visited_post >= 0 ~ (penn$num_sites_visited_post/6))
+
+# Let's try predicting social media usage after the start of the pandemic based on social media usage before the pandemic
+m_social_media<-lm(post_outcome~pre_predictor,penn)
+summary(m_social_media)
+
+confint(m_social_media)
+```
+From these statistics:
+
+#### Intercept and Slope
+
+Intercept estimate: 0.14392
+Slope estimate: 0.66320
+
+From this, we see that those who visited no social media sites before the start of pandemic are expected to increase their social media usage by 0.14392 after the start of the pandemic. 
+Since there is a positive slope, and a relatively steep one at that, we can say that social media usage certainly increased the more someone used social media before the start of the pandemic. Let's check the veracity of this claim with our p-value calculation:
+
+#### Standard Error, t values, p values
+
+- standard error of intercept/slope: 0.07858 / 0.11666
+- t value for intercept/slope: 1.831 / 5.685
+- p value for intercept/slope: 0.0722 / 4.48e-07
+
+#### 95 % CI
+
+The true population parameter will be in this range of values, found from the sample, 95% of the time (ok this is a pretty big confidence interval...)
+
+- CI for intercept: -0.0133800 to 0.3012138
+- CI for slope: 0.4296794 to 0.8967301
+
+Since the slope estimate has a statistically significant p value, we can reject the null hypothesis that the more social media sites a respondent used before the start of the pandemic, the more they were likely to increase their usage after the start of the pandemic. 
+
+Now to test the second hypothesis: that those who increased their social media site usage over the start of the pandemic were more likely to think they used social media excessively:
+
+```{r}
+
+penn$site_diff<-NA # tracking the difference in sites visited
+
+penn$site_diff<-((penn$num_sites_visited_post) - (penn$num_sites_visited_pre))
+
+# now only want those people who went on more sites after the start of the pandemic, let's track this in a binary variable:
+
+penn$pos_site_diff<-case_when(penn$site_diff > 0 ~ 1, 
+                              penn$site_diff <= 0 ~ 0)
+
+# now let's get the binary outcome variable, did they think they spend too much time on social media (valid responses are are answers 1 and 2 to q14)
+
+penn$too_much_time<-case_when(penn$q14 < 3 ~ 1,
+                              penn$q14 >= 3 ~ 0)
+
+m_time<-lm(too_much_time~pos_site_diff, penn)
+summary(m_time)
+
+
+#stargazer(m_time, type = "text", style = "ajps")
+
+```
+We get some strange results with this linear model, and I suspect it's because the sameple size ends up being 60 (after discounting everyone whose site variation did not go up after the start of the pandemic)
+
+#### Estimates for intercept and slope:
+
+- intercept: 0.80000
+- slope: 0.20000
+
+#### Standard error, t value, p values, CI:
+
+- standard error for intercept/slope: 0.05252 / 0.12865
+- t values for intercept and slope: 15.232 / 1.555
+- p values for intercept and slope:  <2e-16 /  0.125
+
+The true population parameter will be inside the CI 95% of the time: 
+`r  confint(m_time)` CI for intercept and slope here. 
+
+Since the slope did not have a statistically significant p value, we cannot reject the null hypothesis, which states that those who increased the variety of sites visited since the start of the pandemic did not find that they spend too much time on social media. 
+
+Thus, my team's research question "Did social media usage increase after the start of the pandemic" remains unanswered. On the one hand, it is clear that those who visited a wider variety of sites before the start of the pandemic were likely to increase the variety of sites visited after March 2020, but it is not clear whether overall usage increased. More analysis needs to be done. I would like to measure average increase in number of hours in the future. 
+
 
 ```
